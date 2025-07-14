@@ -1,0 +1,32 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  // ATENÇÃO: HARDCODED APENAS PARA SOLUCIONAR SEU PROBLEMA COM O CLI DO PRISMA.
+  // EM PRODUÇÃO, USARÍAMOS: url = env("DATABASE_URL")
+  url = "mysql://root:@localhost:3306/copperline"
+}
+
+// NOVO MODELO: Para os dados da planilha de produtos (COM COLUNA 'CODIGO')
+model ProductEntry {
+  id                 Int       @id @default(autoincrement()) // ID auto-incrementável para produtos
+  codigo             String    @unique @map("codigo")        // NOVA COLUNA: Código, assumindo que é único
+  nomeProduto        String    @map("nome_produto")
+  tamanhoPadrao      String    @map("tamanho_padrao")
+  designacao         String    @map("designacao")
+  tensao             String    @map("tensao")
+  massaBrutaKg100m   Float     @map("massa_bruta_kg_100m") // Usar Float para números decimais
+  normaAplicada      String    @map("norma_aplicada")
+  composicao         String    @map("composicao")
+  numeroRegistro     String    @map("numero_registro")
+  codBarras          String    @unique @map("cod_barras") // Assumindo que código de barras é único
+  pedidoOc           String?   @map("pedido_oc") // Opcional, se nem sempre tiver
+  retalho            String?   @map("retalho") // Opcional, se nem sempre tiver
+  massaLiquidaKg100m Float     @map("massa_liquida_kg_100m") // Usar Float
+
+  @@map("product_entries") // Nome da tabela no banco de dados
+}

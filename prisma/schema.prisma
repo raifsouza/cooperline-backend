@@ -30,3 +30,23 @@ model ProductEntry {
 
   @@map("product_entries") // Nome da tabela no banco de dados
 }
+
+model LabelEntry {
+  id            Int     @id @default(autoincrement())
+  fileName      String  @unique @map("file_name") // Nome do arquivo .prn, usado como nome da etiqueta
+  originalContent String  @db.Text @map("original_content") // Conteúdo original do arquivo .prn
+  designacao    String?
+  tensao        String?
+  dataFab       String? @map("data_fab")
+  paisOrigem    String? @map("pais_origem")
+  validade      String?
+  lote          String?
+  registro      String?
+  barcode       String? // O valor do código de barras
+  // Adicione outras colunas conforme necessário para campos editáveis
+  // Exemplo:
+  // customField1 String?
+  // customField2 String?
+
+  @@map("label_entries") // Nome da tabela no banco de dados
+}

@@ -11,6 +11,15 @@ datasource db {
   url = "mysql://root:@localhost:3306/copperline"
 }
 
+model User { // Ou o nome que preferir para o modelo
+  id            Int     @id @default(autoincrement())
+  nome          String
+  senha         String
+  nivel_acesso  Int? // Ou Int se sempre tiver um nível de acesso
+
+  @@map("usuarios") // Ou o nome real da sua tabela de usuários no DB (e.g., 'user_accounts')
+}
+
 // NOVO MODELO: Para os dados da planilha de produtos (COM COLUNA 'CODIGO')
 model ProductEntry {
   id                 Int       @id @default(autoincrement()) // ID auto-incrementável para produtos
@@ -49,4 +58,18 @@ model LabelEntry {
   // customField2 String?
 
   @@map("label_entries") // Nome da tabela no banco de dados
+}
+
+
+model PrintHistory {
+  id             Int      @id @default(autoincrement())
+  userId         String
+  userName       String
+  userMatricula  String?  // <-- TEM QUE ESTAR ASSIM
+  timestamp      DateTime @default(now())
+  printerName    String
+  copies         Int
+  labelName      String
+  productName    String?
+  zplContentSent String?
 }

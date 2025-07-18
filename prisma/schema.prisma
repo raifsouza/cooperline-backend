@@ -60,6 +60,14 @@ model LabelEntry {
   @@map("label_entries") // Nome da tabela no banco de dados
 }
 
+model LoteEntry {
+  id           Int      @id @default(autoincrement())
+  lote         String
+  produto      String   // Mantido como String para flexibilidade (pode ser "50456" ou "50082/LC-100")
+  fabricadoEm  DateTime
+
+  @@map("lote_entries") // Nome da tabela no banco de dados
+}
 
 model PrintHistory {
   id             Int      @id @default(autoincrement())
@@ -69,7 +77,10 @@ model PrintHistory {
   timestamp      DateTime @default(now())
   printerName    String
   copies         Int
+  reprint        Boolean  @default(false)
   labelName      String
   productName    String?
+  productCode    String?
+  productLote    String?
   zplContentSent String?
 }

@@ -20,6 +20,9 @@ export async function POST(request: Request) {
       copies,
       labelName,
       productName,
+      productCode,
+      productLote,
+      reprint,
       zplContentSent
     } = await request.json();
 
@@ -37,8 +40,11 @@ export async function POST(request: Request) {
         printerName,
         copies,
         labelName,
+        reprint:reprint,
         productName: productName || null,
-        zplContentSent: zplContentSent || null
+        productCode: productCode || null,
+        productLote: productLote || null,
+        zplContentSent: zplContentSent || null,
       },
     });
 

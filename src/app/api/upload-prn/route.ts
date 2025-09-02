@@ -1,5 +1,5 @@
 // app/api/upload-prn/route.ts
-import { NextResponse } from 'next/server';
+import { NextRequest ,NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import * as xlsx from 'xlsx'; // xlsx não é estritamente necessário aqui, mas mantido se precisar de outras funções
 import { Readable } from 'stream'; // Necessário para .prn se for stream
@@ -36,64 +36,20 @@ export async function POST(req: Request) {
     }
 
     // 1. Obter o nome do arquivo sem a extensão .prn
-    const fileNameWithExtension = prnFile.name;
-    const labelName = fileNameWithExtension.replace(/\.prn$/i, '').trim();
-
-    // 2. Ler o conteúdo do arquivo .prn
-    const fileContent = await prnFile.text(); // Lê o arquivo como texto
-
-    // 3. Extrair informações usando Regex
-    const extractedData: { [key: string]: string | null } = {};
-
-    // Expressões regulares para cada campo.
-    // Opcional: Adicione mais regex se tiver outros campos a extrair.
-    const regexMap = {
-      designacao: /- Designa\x87\xC6o:\s*(.+?)(?=\^)/i, // Corrigido para \x87\xC6o
-      tensao: /- Tens\xC6o:\s*(.+?)(?=\^)/i,
-      dataFab: /- Data Fab\.:\s*(.+?)(?=\^)/i,
-      paisOrigem: /- Pa\xA1s de origem:\s*(.+?)(?=\^)/i, // Corrigido para \xA1s
-      validade: /- Validade:\s*(.+?)(?=\^)/i,
-      lote: /- Lote:\s*(.+?)(?=\^)/i,
-      registro: /Registro\s*(.+?)(?=\^)/i, // Ou ^FDRegistro(\s*[^A-Z0-9]*)([A-Z0-9\/]+)
-      barcode: /\^FD(\d{13,14})\^FS/i // Assumindo 13 ou 14 dígitos para código de barras, dentro de ^FD ^FS
-    };
-
-    for (const key in regexMap) {
-      if (Object.prototype.hasOwnProperty.call(regexMap, key)) {
-        const regex = regexMap[key as keyof typeof regexMap];
-        const match = fileContent.match(regex);
-        extractedData[key] = match && match[1] ? match[1].trim() : null;
-      }
-    }
-    
-    // Tratamento específico para o registro que aparece em outro formato
-    const registroMatchAlt = fileContent.match(/Registro\^FS\n\^FT\d+,\d+\^A0B,\d+,\d+\^FB\d+,1,0,C\^FH\\?\^FD([\d\/]+)\^FS/i);
-    if (registroMatchAlt && registroMatchAlt[1]) {
-      extractedData.registro = registroMatchAlt[1].trim();
-    }
-
+    const fileName = prnFile.name;
+    const originalContent = await prnFile.text(); // Lê o arquivo como texto
+    const normalizedFileName = fileName.replace(/\.prn$/i, '').toLowerCase().trim();
 
     // 4. Salvar no banco de dados usando Prisma
     const newLabelEntry = await prisma.labelEntry.create({
       data: {
-        fileName: labelName,
-        originalContent: fileContent,
-        designacao: extractedData.designacao,
-        tensao: extractedData.tensao,
-        dataFab: extractedData.dataFab,
-        paisOrigem: extractedData.paisOrigem,
-        validade: extractedData.validade,
-        lote: extractedData.lote,
-        registro: extractedData.registro,
-        barcode: extractedData.barcode,
+        fileName: normalizedFileName,
+        originalContent: originalContent,
       },
     });
 
     return NextResponse.json(
-      {
-        message: 'Arquivo .prn processado e salvo com sucesso!',
-        label: newLabelEntry,
-      },
+      { message: 'Arquivo .prn processado e salvo com sucesso!', label: newLabelEntry},
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {

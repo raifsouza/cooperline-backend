@@ -6,7 +6,12 @@ import { getConnection } from '../../lib/db'; // Reutilize sua função de conex
 // Deve ser idêntica à interface ProductEntry no seu frontend
 interface ProductEntry {
   codigo: string;
-  nome_produto: string;
+  nomeLinha1?: string;
+  nomeLinha2?: string;
+  nomeLinha3?: string;
+  nomeLinha4?: string;
+  nomeLinha5?: string;
+  nomeLinha6?: string;
   tamanho_padrao?: string;
   designacao?: string;
   tensao?: string;
@@ -18,6 +23,7 @@ interface ProductEntry {
   pedido_oc?: string;
   retalho?: string;
   massa_liquida_kg_100m?: number;
+  label_id?: number;
 }
 
 export async function GET() {
@@ -29,7 +35,12 @@ export async function GET() {
     const [rows] = await connection.execute(
       `SELECT
          codigo,
-         nome_produto,
+         nome_linha_1,
+         nome_linha_2,
+         nome_linha_3,
+         nome_linha_4,
+         nome_linha_5,
+         nome_linha_6,
          tamanho_padrao,
          designacao,
          tensao,
@@ -40,8 +51,9 @@ export async function GET() {
          cod_barras,
          pedido_oc,
          retalho,
-         massa_liquida_kg_100m
-       FROM product_entries`
+         massa_liquida_kg_100m,
+         label_id
+       FROM product_entries;`
     );
 
     console.log('Produtos buscados do banco de dados:', rows);

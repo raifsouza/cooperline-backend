@@ -15,6 +15,12 @@ const cors = Cors({
   optionsSuccessStatus: 200,
 });
 
+export const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
 // Helper para executar o middleware em suas rotas de API
 export default function runMiddleware(
   req: NextApiRequest,

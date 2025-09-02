@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   // ATENÇÃO: HARDCODED APENAS PARA SOLUCIONAR SEU PROBLEMA COM O CLI DO PRISMA.
   // EM PRODUÇÃO, USARÍAMOS: url = env("DATABASE_URL")
   url = "mysql://root:@localhost:3306/copperline"
@@ -24,7 +24,12 @@ model User { // Ou o nome que preferir para o modelo
 model ProductEntry {
   id                 Int       @id @default(autoincrement()) // ID auto-incrementável para produtos
   codigo             String    @unique @map("codigo")        // NOVA COLUNA: Código, assumindo que é único
-  nomeProduto        String    @map("nome_produto")
+  nomeLinha1         String?   @map("nome_linha_1")
+  nomeLinha2         String?   @map("nome_linha_2")
+  nomeLinha3         String?   @map("nome_linha_3")
+  nomeLinha4         String?   @map("nome_linha_4")
+  nomeLinha5         String?   @map("nome_linha_5")
+  nomeLinha6         String?   @map("nome_linha_6")
   tamanhoPadrao      String    @map("tamanho_padrao")
   designacao         String    @map("designacao")
   tensao             String    @map("tensao")
@@ -37,21 +42,18 @@ model ProductEntry {
   retalho            String?   @map("retalho") // Opcional, se nem sempre tiver
   massaLiquidaKg100m Float     @map("massa_liquida_kg_100m") // Usar Float
 
+  labelId Int         @map("label_id") // A coluna da chave estrangeira
+  label   LabelEntry  @relation(fields: [labelId], references: [id])
+
   @@map("product_entries") // Nome da tabela no banco de dados
 }
 
 model LabelEntry {
   id            Int     @id @default(autoincrement())
-  fileName      String  @unique @map("file_name") // Nome do arquivo .prn, usado como nome da etiqueta
+  fileName        String   @unique @map("file_name")
   originalContent String  @db.Text @map("original_content") // Conteúdo original do arquivo .prn
-  designacao    String?
-  tensao        String?
-  dataFab       String? @map("data_fab")
-  paisOrigem    String? @map("pais_origem")
-  validade      String?
-  lote          String?
-  registro      String?
-  barcode       String? // O valor do código de barras
+
+  products        ProductEntry[]
   // Adicione outras colunas conforme necessário para campos editáveis
   // Exemplo:
   // customField1 String?
@@ -63,8 +65,6 @@ model LabelEntry {
 model LoteEntry {
   id           Int      @id @default(autoincrement())
   lote         String
-  produto      String   // Mantido como String para flexibilidade (pode ser "50456" ou "50082/LC-100")
-  fabricadoEm  DateTime
 
   @@map("lote_entries") // Nome da tabela no banco de dados
 }

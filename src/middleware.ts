@@ -5,9 +5,10 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
+  const allowedOrigin = process.env.FRONTEND_URL;
+
   // Permita acesso do seu frontend Angular (http://localhost:4200)
-  response.headers.set('Access-Control-Allow-Origin', 'http://localhost:4200');
-  // Inclua 'OPTIONS' explicitamente nos métodos permitidos
+  response.headers.set('Access-Control-Allow-Origin', allowedOrigin || 'http://localhost:4200');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   response.headers.set('Access-Control-Allow-Credentials', 'true');

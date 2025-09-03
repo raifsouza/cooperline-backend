@@ -4,11 +4,13 @@ import Cors from 'cors';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Inicializa o middleware CORS com suas configurações
+const allowedOrigin = process.env.FRONTEND_URL;
+
 const cors = Cors({
   // É crucial incluir 'OPTIONS' aqui para que o middleware lide com as requisições de pré-voo
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   // A URL EXATA do seu frontend Angular
-  origin: 'http://localhost:4200',
+  origin: allowedOrigin || 'http://localhost:4200',
   // Importante se você estiver usando credenciais (cookies, headers de Autorização)
   credentials: true,
   // O status esperado para requisições OPTIONS bem-sucedidas

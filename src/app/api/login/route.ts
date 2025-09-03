@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../lib/db';
 // import bcrypt from 'bcryptjs'; // Removido por enquanto para simplificar o teste de CORS
 
+const allowedOrigin = process.env.FRONTEND_URL;
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:4200', // Permita especificamente o seu frontend Angular
+  'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200', // Permita especificamente o seu frontend Angular
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS', // Métodos permitidos
   'Access-Control-Allow-Headers': 'Content-Type, Authorization', // Cabeçalhos permitidos
   'Access-Control-Allow-Credentials': 'true', // Permite credenciais (cookies, headers de auth)

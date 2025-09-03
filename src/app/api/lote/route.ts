@@ -40,11 +40,12 @@ export async function GET(request: Request) {
 
 // CORS OPTIONS handler (necessário se o frontend e backend estiverem em portas diferentes)
 export async function OPTIONS(request: Request) {
-    return new NextResponse(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': 'http://localhost:4200', // Sua origem do Angular
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  const allowedOrigin = process.env.FRONTEND_URL;
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200', // Sua origem do Angular
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type',
         },
     });

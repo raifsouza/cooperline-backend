@@ -1,10 +1,12 @@
 // src/app/api/time/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
+const allowedOrigin = process.env.FRONTEND_URL;
+
 const corsHeaders = {
-    'Access-Control-Allow-Origin':'http://localhost:4200',
-    'Access-Control-Allow-Methods':'GET, OPTIONS',
-    'Access-Control-Allow-Headers':'Content-Type',
+    'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 export async function OPTIONS(request: NextRequest) {

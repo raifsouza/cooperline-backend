@@ -21,8 +21,9 @@ const prisma = new PrismaClient({
 });
 
 export async function POST(req: Request) {
+  const allowedOrigin = process.env.FRONTEND_URL;
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'http://localhost:4200', // Ajuste para seu frontend
+    'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
@@ -70,10 +71,11 @@ export async function POST(req: Request) {
 
 // Manipulador para requisições OPTIONS (CORS Preflight)
 export async function OPTIONS(request: Request) {
+  const allowedOrigin = process.env.FRONTEND_URL;
   return NextResponse.json({}, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': 'http://localhost:4200',
+      'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
       'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }

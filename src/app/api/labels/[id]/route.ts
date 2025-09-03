@@ -5,8 +5,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient(); // Lembre-se da nossa recomendação de centralizar isso depois
 
+const allowedOrigin = process.env.FRONTEND_URL;
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:4200', // Ajuste para seu IP em produção
+  'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };

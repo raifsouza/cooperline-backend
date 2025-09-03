@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getConnection } from '../../../lib/db';// Ajuste o caminho para seu arquivo db.ts
 
 // Definir os cabeçalhos CORS uma vez para reutilização
+const allowedOrigin = process.env.FRONTEND_URL;
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:4200',
+  'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
   'Access-Control-Allow-Methods': 'PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };

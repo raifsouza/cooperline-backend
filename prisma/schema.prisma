@@ -8,7 +8,7 @@ datasource db {
   provider = "postgresql"
   // ATENÇÃO: HARDCODED APENAS PARA SOLUCIONAR SEU PROBLEMA COM O CLI DO PRISMA.
   // EM PRODUÇÃO, USARÍAMOS: url = env("DATABASE_URL")
-  url = "mysql://root:@localhost:3306/copperline"
+  url = env("DATABASE_URL")
 }
 
 model User { // Ou o nome que preferir para o modelo

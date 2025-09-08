@@ -9,13 +9,23 @@ import e from 'cors';
 // exportada de um arquivo em /lib, em vez de criar uma nova em cada rota.
 const prisma = new PrismaClient();
 
+function normalizeLoteNumber(lote: any): string | null  {
+  if (!lote) return null;
+
+  const loteString = String(lote).trim();
+
+  const match = loteString.match(/^(\d{4}-\d{6})/);
+
+  return match ? match[1] : null;
+}
+
 // O handler OPTIONS é necessário para o CORS (Cross-Origin Resource Sharing)
 export async function OPTIONS(request: Request) {
   const allowedOrigin = process.env.FRONTEND_URL;
   return new NextResponse(null, {
     status: 204, // No Content
     headers: {
-      'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4200',
+      'Access-Control-Allow-Origin': allowedOrigin || 'http://localhost:4000',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
@@ -26,15 +36,21 @@ export async function OPTIONS(request: Request) {
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('loteFile');
+    const fileValue = formData.get('loteFile');
 
     // Validação inicial do arquivo
-    if (!(file instanceof File)) {
+    if (!fileValue || typeof fileValue === 'string') {
+      console.error('O valor do campo "loteFile" é uma string ou está ausente, mas um arquivo era esperado.');
       return NextResponse.json({ message: 'O valor enviado para o lote não é um arquivo válido.' }, { status: 400 });
     }
 
+    const file = fileValue as Blob;
+    console.log(`Arquivo recebido. Tamanho: ${file.size} bytes`);
+
+    
     // Leitura e processamento do arquivo Excel
-    const data = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
     const workbook = XLSX.read(data, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
@@ -45,44 +61,31 @@ export async function POST(request: Request) {
     }
 
     const headers = jsonData[0] as string[];
+    const loteColumnIndex =  headers.findIndex(h => String(h).toLowerCase().replace(/\s+/g, '') === 'lote');
+
+    if (loteColumnIndex === -1) {
+        return NextResponse.json({ message: 'A planilha precisa ter uma coluna chamada "Lote".' }, { status: 400 });
+    }
+
     const rows = jsonData.slice(1);
 
-    const loteEntries = []; // Array para guardar apenas os dados que serão salvos
-    let processedRowsCount = 0;
-    let skippedRowsCount = 0;
+    const lotesDaPlanilha = rows
+      .map(row => row[loteColumnIndex])
+      .filter(lote => lote !== null && lote !== undefined && String(lote).trim() !== '');
 
-    for (const row of rows) {
-      const rowData: { [key: string]: any } = {};
-      headers.forEach((header, index) => {
-        // Normaliza os cabeçalhos para minúsculas e sem espaços para busca confiável
-        const normalizedKey = header.toLowerCase().replace(/\s+/g, '');
-        rowData[normalizedKey] = row[index];
-      });
+    const lotesNormalizados = lotesDaPlanilha.map(normalizeLoteNumber);
 
-      // Extraímos APENAS o dado que nos interessa para esta tabela: 'lote'
-      const lote = rowData['lote'];
-      
-      // Validamos se a coluna 'lote' existe e tem um valor na linha atual
-      if (!lote) {
-        console.warn('Linha ignorada por não conter a coluna "lote":', rowData);
-        skippedRowsCount++;
-        continue; // Pula para a próxima linha do Excel
-      }
+    // 2. Usa um Set para obter apenas os valores únicos da planilha
+    const lotesUnicosEValidos = [...new Set(lotesNormalizados.filter(lote => lote))];
 
-      // Adicionamos ao array um objeto que corresponde EXATAMENTE
-      // ao modelo LoteEntry do seu schema.prisma
-      loteEntries.push({
-        lote: String(lote),
-      });
-      processedRowsCount++;
+    if (lotesUnicosEValidos.length === 0) {
+      return NextResponse.json({ message: 'Nenhum lote válido encontrado na planilha.' }, { status: 400 });
     }
 
-    if (loteEntries.length === 0) {
-        const message = skippedRowsCount > 0 
-            ? `Nenhum dado válido encontrado para salvar. ${skippedRowsCount} linhas foram ignoradas.`
-            : 'O arquivo não contém dados válidos.';
-        return NextResponse.json({ message }, { status: 400 });
-    }
+    // 3. Prepara os dados para o Prisma no formato correto
+    const loteEntries = lotesUnicosEValidos.map(lote => ({
+      lote: lote as string
+    }));
 
     // O comando createMany agora funciona, pois os dados em 'loteEntries'
     // estão no formato correto que o Prisma espera para o modelo LoteEntry.
@@ -90,13 +93,11 @@ export async function POST(request: Request) {
       data: loteEntries,
       skipDuplicates: true, // Evita erros se o lote já existir (requer @unique no lote no schema)
     });
-
-    console.log(`Upload de lote concluído. Total de linhas lidas: ${processedRowsCount}, Salvas no DB: ${createManyResult.count}, Ignoradas: ${skippedRowsCount}`);
     
     return NextResponse.json({
       message: `Upload de lote concluído com sucesso. ${createManyResult.count} novas entradas de lote salvas.`,
       savedCount: createManyResult.count,
-      skippedCount: skippedRowsCount
+      TotalUniqueinFile: lotesUnicosEValidos.length
     }, { status: 200 });
 
   } catch (error: any) {

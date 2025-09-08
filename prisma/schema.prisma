@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   // ATENÇÃO: HARDCODED APENAS PARA SOLUCIONAR SEU PROBLEMA COM O CLI DO PRISMA.
   // EM PRODUÇÃO, USARÍAMOS: url = env("DATABASE_URL")
   url = env("DATABASE_URL")
@@ -13,7 +13,7 @@ datasource db {
 
 model User { // Ou o nome que preferir para o modelo
   id            Int     @id @default(autoincrement())
-  nome          String
+  nome          String  @unique
   senha         String
   nivel_acesso  Int? // Ou Int se sempre tiver um nível de acesso
 
@@ -50,7 +50,7 @@ model ProductEntry {
 
 model LabelEntry {
   id            Int     @id @default(autoincrement())
-  fileName        String   @unique @map("file_name")
+  fileName        String  @unique @map("file_name")
   originalContent String  @db.Text @map("original_content") // Conteúdo original do arquivo .prn
 
   products        ProductEntry[]
@@ -64,7 +64,7 @@ model LabelEntry {
 
 model LoteEntry {
   id           Int      @id @default(autoincrement())
-  lote         String
+  lote         String   @unique
 
   @@map("lote_entries") // Nome da tabela no banco de dados
 }

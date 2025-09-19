@@ -82,5 +82,5 @@ model PrintHistory {
   productName    String?
   productCode    String?
   productLote    String?
-  zplContentSent String?
+  zplContentSent String? @db.MediumText
 }
